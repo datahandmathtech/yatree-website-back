@@ -101,26 +101,25 @@ app.get(/.*/, (req, res) => {
   }
 });
 
-// Database connection
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/Yatree';
-app.listen(PORT, () => {
+
+console.log("=== APP STARTING ===");
+console.log("Node version:", process.version);
+console.log("MONGO_URI configured as:", MONGO_URI.replace(/:([^:@]+)@/, ':***@')); // Hide password
+
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server starting on port ${PORT}...`);
 });
 
-const connectDB = async (retries = 5) => {
+const connectDB = async () => {
   try {
+    console.log("Attempting MongoDB connection...");
     await mongoose.connect(MONGO_URI);
     console.log('✅ Connected to MongoDB (Yatree)');
   } catch (err) {
-    console.error(`❌ MongoDB connection error: ${err.message}`);
-    if (retries > 0) {
-      console.log(`Retrying in 5 seconds... (${retries} retries left)`);
-      setTimeout(() => connectDB(retries - 1), 5000);
-    } else {
-      console.log('Could not connect to MongoDB. Please check your IP Whitelist on Atlas.');
-      process.exit(1);
-    }
+    console.error(`❌ MongoDB connection error:`, err);
+    process.exit(1);
   }
 };
 
