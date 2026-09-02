@@ -6,7 +6,7 @@ dotenv.config({ path: './src/.env' });
 // Fallback if .env is in root
 dotenv.config();
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/Yatree';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/GoGetGo';
 
 const seedReviews = async () => {
   try {
@@ -20,7 +20,7 @@ const seedReviews = async () => {
       {
         name: 'shivaani bhambure',
         rating: 5,
-        text: "Travel experience with Yatree Destination was quite good. The cab - Ciaz was given to us which was very clean & well maintained throughout our tour. Driver Satishji was also very good by nature, he has a great knowledge Abt the city & It's...",
+        text: "Travel experience with GoGetGo Taxi was quite good. The cab - Ciaz was given to us which was very clean & well maintained throughout our tour. Driver Satishji was also very good by nature, he has a great knowledge Abt the city & It's...",
         avatar: 'https://ui-avatars.com/api/?name=shivaani+bhambure&background=0F172A&color=EAB308',
         createdAt: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000)
       }

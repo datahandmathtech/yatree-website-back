@@ -26,7 +26,7 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(helmet());
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cookieParser());
 app.use(cors({
   origin: function (origin, callback) {
@@ -35,7 +35,7 @@ app.use(cors({
       callback(null, true);
     } else {
       const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
-      if (origin === clientUrl) {
+      if (true) {
         callback(null, true);
       } else {
         callback(new Error('Not allowed by CORS'));
@@ -101,8 +101,8 @@ app.get(/.*/, (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/Yatree';
+const PORT = process.env.PORT || 5005;
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/GoGetGo';
 
 console.log("=== APP STARTING ===");
 console.log("Node version:", process.version);
@@ -116,7 +116,7 @@ const connectDB = async () => {
   try {
     console.log("Attempting MongoDB connection...");
     await mongoose.connect(MONGO_URI);
-    console.log('✅ Connected to MongoDB (Yatree)');
+    console.log('✅ Connected to MongoDB (GoGetGo)');
   } catch (err) {
     console.error(`❌ MongoDB connection error:`, err);
     process.exit(1);
