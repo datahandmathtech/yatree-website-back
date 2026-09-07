@@ -65,7 +65,11 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 
 // Static files serving
-app.use(express.static(path.join(__dirname, '../public')));
+const staticDir = require('fs').existsSync(path.join(__dirname, '../dist/index.html'))
+  ? path.join(__dirname, '../dist')
+  : path.join(__dirname, '../public');
+
+app.use(express.static(staticDir));
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -91,13 +95,13 @@ app.use((err, req, res, next) => {
 
 // Serve frontend - Catch all routes and send to index.html
 app.get(/.*/, (req, res) => {
-  const indexPath = path.join(__dirname, '../public', 'index.html');
+  const indexPath = path.join(staticDir, 'index.html');
   
   // Check if file exists to prevent crash
   if (require('fs').existsSync(indexPath)) {
     res.sendFile(indexPath);
   } else {
-    res.status(404).send('Frontend build (index.html) not found in server/public. Please run build:frontend and upload files.');
+    res.status(404).send('Frontend build (index.html) not found. Please run build:frontend and upload files.');
   }
 });
 
