@@ -26,7 +26,7 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(helmet());
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cookieParser());
 app.use(cors({
   origin: function (origin, callback) {
