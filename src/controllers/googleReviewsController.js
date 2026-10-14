@@ -63,7 +63,7 @@ const INITIAL_SEEDED_REVIEWS = [
   {
     googleReviewId: "rev-rahul-sharma",
     author: "Rahul Sharma",
-    authorPhoto: "",
+    authorPhoto: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
     rating: 5,
     relativeTime: "1 month ago",
     publishTime: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
@@ -74,7 +74,7 @@ const INITIAL_SEEDED_REVIEWS = [
   {
     googleReviewId: "rev-priya-sengupta",
     author: "Priya & Aniket Sengupta",
-    authorPhoto: "",
+    authorPhoto: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
     rating: 5,
     relativeTime: "1 month ago",
     publishTime: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000),
@@ -85,7 +85,7 @@ const INITIAL_SEEDED_REVIEWS = [
   {
     googleReviewId: "rev-vikramaditya",
     author: "Vikramaditya Rathore",
-    authorPhoto: "",
+    authorPhoto: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
     rating: 5,
     relativeTime: "2 months ago",
     publishTime: new Date(Date.now() - 70 * 24 * 60 * 60 * 1000),
@@ -96,7 +96,7 @@ const INITIAL_SEEDED_REVIEWS = [
   {
     googleReviewId: "rev-dr-sneha",
     author: "Dr. Sneha Kulkarni",
-    authorPhoto: "",
+    authorPhoto: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
     rating: 5,
     relativeTime: "2 months ago",
     publishTime: new Date(Date.now() - 80 * 24 * 60 * 60 * 1000),
@@ -107,7 +107,7 @@ const INITIAL_SEEDED_REVIEWS = [
   {
     googleReviewId: "rev-amit-verma",
     author: "Amit Verma",
-    authorPhoto: "",
+    authorPhoto: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150&auto=format&fit=crop&q=80",
     rating: 5,
     relativeTime: "3 months ago",
     publishTime: new Date(Date.now() - 95 * 24 * 60 * 60 * 1000),
@@ -118,7 +118,7 @@ const INITIAL_SEEDED_REVIEWS = [
   {
     googleReviewId: "rev-meera-nair",
     author: "Meera Nair",
-    authorPhoto: "",
+    authorPhoto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
     rating: 5,
     relativeTime: "3 months ago",
     publishTime: new Date(Date.now() - 105 * 24 * 60 * 60 * 1000),
@@ -129,7 +129,7 @@ const INITIAL_SEEDED_REVIEWS = [
   {
     googleReviewId: "rev-rajesh-patel",
     author: "Rajesh Patel",
-    authorPhoto: "",
+    authorPhoto: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80",
     rating: 5,
     relativeTime: "4 months ago",
     publishTime: new Date(Date.now() - 130 * 24 * 60 * 60 * 1000),
@@ -229,16 +229,16 @@ async function syncReviewsWithDatabase() {
       }
     }
 
-    // 2. Seed initial base reviews if count is low
-    const count = await GoogleReview.countDocuments();
-    if (count < INITIAL_SEEDED_REVIEWS.length) {
-      for (const item of INITIAL_SEEDED_REVIEWS) {
-        await GoogleReview.findOneAndUpdate(
-          { author: item.author },
-          { $setOnInsert: item },
-          { upsert: true }
-        );
-      }
+    // 2. Seed initial base reviews and ensure photos exist
+    for (const item of INITIAL_SEEDED_REVIEWS) {
+      await GoogleReview.findOneAndUpdate(
+        { author: item.author },
+        {
+          $setOnInsert: item,
+          $set: { authorPhoto: item.authorPhoto }
+        },
+        { upsert: true }
+      );
     }
 
     lastFetchTime = Date.now();
@@ -276,7 +276,17 @@ exports.getGoogleReviews = async (req, res) => {
       }
     }
 
-    // Format reviews for client
+    // Format reviews for client and backfill authorPhoto if missing
+    for (const r of dbReviews) {
+      if (!r.authorPhoto) {
+        const match = INITIAL_SEEDED_REVIEWS.find(s => s.author === r.author);
+        if (match && match.authorPhoto) {
+          r.authorPhoto = match.authorPhoto;
+          GoogleReview.updateOne({ _id: r._id }, { $set: { authorPhoto: match.authorPhoto } }).catch(() => {});
+        }
+      }
+    }
+
     const formattedReviews = (dbReviews && dbReviews.length > 0)
       ? dbReviews.map(r => ({
           id: r._id ? r._id.toString() : r.googleReviewId,
